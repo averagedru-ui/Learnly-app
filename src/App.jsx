@@ -30,9 +30,9 @@ import {
 } from 'lucide-react';
 
 // ==========================================
-// VERSION TAG (Increment this to verify updates)
+// VERSION TAG (Vercel will update when you push)
 // ==========================================
-const APP_VERSION = "1.0.7 (Vercel Build)";
+const APP_VERSION = "1.0.9 (Production)";
 
 // ==========================================
 // FIREBASE CONFIG
@@ -101,6 +101,7 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setStatus('ready');
+      if (!u) setView('dashboard');
     });
     return () => unsubscribe();
   }, []);
