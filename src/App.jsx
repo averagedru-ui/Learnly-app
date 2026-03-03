@@ -32,7 +32,7 @@ import {
 // ==========================================
 // VERSION TAG 
 // ==========================================
-const APP_VERSION = "1.1.3";
+const APP_VERSION = "1.1.4";
 
 // ==========================================
 // FIREBASE CONFIG
@@ -139,7 +139,6 @@ export default function App() {
     return { flashcards: sList.filter(s => s.type === 'flashcards').length, exams: sList.filter(s => s.type === 'quizzes').length, totalItems, avg };
   }, [sets, historyData]);
 
-  // Auth Functions
   const handleAuth = async (e) => {
     if (e) e.preventDefault();
     setAuthError('');
@@ -214,7 +213,6 @@ export default function App() {
           {authMode === 'signup' && <input type="text" placeholder="Full Name" onChange={e => setFullName(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />}
           <input type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
           <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
-          {authError && <div className="text-rose-500 text-[10px] font-black uppercase text-center">{authError}</div>}
           <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase text-xs shadow-xl tracking-widest active:scale-95 transition-all">{authMode === 'login' ? 'Sign In' : 'Sign Up'}</button>
         </form>
 
@@ -243,7 +241,7 @@ export default function App() {
         <span className="font-black text-2xl tracking-tighter cursor-pointer" onClick={() => setView('dashboard')}>LEARNLY</span>
         <div className="flex items-center gap-4">
           {syncing && <RefreshCw className="animate-spin text-indigo-500" size={16} />}
-          <div onClick={() => setView('profile')} className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 cursor-pointer shadow-inner"><User size={20} /></div>
+          <User className="text-indigo-600 cursor-pointer" onClick={() => setView('profile')} />
         </div>
       </nav>
 
@@ -254,7 +252,7 @@ export default function App() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 text-center">
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-50"><div className="text-2xl font-black text-indigo-600">{stats.flashcards + stats.exams}</div><div className="text-[10px] font-black uppercase text-slate-300">Sets</div></div>
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-50"><div className="text-2xl font-black text-indigo-600">{stats.totalItems}</div><div className="text-[10px] font-black uppercase text-slate-300">Items</div></div>
-              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100"><div className="text-2xl font-black text-indigo-600">{stats.avg}%</div><div className="text-[10px] font-black uppercase text-slate-300">Avg Score</div></div>
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-50"><div className="text-2xl font-black text-indigo-600">{stats.avg}%</div><div className="text-[10px] font-black uppercase text-slate-300">Avg Score</div></div>
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-50"><div className="text-2xl font-black text-indigo-600">{historyData.length}</div><div className="text-[10px] font-black uppercase text-slate-300">Tests</div></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
