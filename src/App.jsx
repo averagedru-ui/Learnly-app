@@ -213,6 +213,7 @@ export default function App() {
           {authMode === 'signup' && <input type="text" placeholder="Full Name" onChange={e => setFullName(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />}
           <input type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
           <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" />
+          {authError && <div className="text-rose-500 text-[10px] font-black uppercase text-center">{authError}</div>}
           <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase text-xs shadow-xl tracking-widest active:scale-95 transition-all">{authMode === 'login' ? 'Sign In' : 'Sign Up'}</button>
         </form>
 
@@ -241,7 +242,7 @@ export default function App() {
         <span className="font-black text-2xl tracking-tighter cursor-pointer" onClick={() => setView('dashboard')}>LEARNLY</span>
         <div className="flex items-center gap-4">
           {syncing && <RefreshCw className="animate-spin text-indigo-500" size={16} />}
-          <User className="text-indigo-600 cursor-pointer" onClick={() => setView('profile')} />
+          <div onClick={() => setView('profile')} className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 cursor-pointer shadow-inner"><User size={20} /></div>
         </div>
       </nav>
 
