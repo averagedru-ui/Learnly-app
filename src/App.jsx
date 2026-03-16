@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { Trash2, ChevronLeft, ChevronRight, BrainCircuit, GraduationCap, RefreshCw, X, Plus, LayoutGrid, User, Home, BookOpen, Edit3, LogOut, FlaskConical } from 'lucide-react';
 
@@ -88,6 +88,12 @@ export default function App() {
     return { sets: sList.length, totalItems, avg, tests: hList.length };
   }, [sets, historyData]);
 
+  const handleForgotPassword = async () => {
+    if (!email) { setAuthError('Enter your email above first.'); return; }
+    try { await sendPasswordResetEmail(auth, email); setAuthError('Reset email sent! Check your inbox.'); }
+    catch (err) { setAuthError(err.message.replace('Firebase: ', '')); }
+  };
+
   const handleAuth = async (e) => {
     if (e) e.preventDefault();
     setAuthError('');
@@ -117,6 +123,7 @@ export default function App() {
           <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
           <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
           <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase text-xs shadow-xl active:scale-95 transition-all">{authMode === 'login' ? 'Sign In' : 'Sign Up'}</button>
+          {authMode === 'login' && <button type="button" onClick={handleForgotPassword} className="w-full text-slate-400 font-black text-[10px] uppercase mt-1">Forgot Password?</button>}
         </form>
         {authError && <p className="mt-4 text-rose-500 text-xs font-bold text-center">{authError}</p>}
         <button onClick={handleGuestEntry} className="mt-6 w-full text-slate-400 font-black text-[10px] uppercase flex items-center justify-center gap-2"><FlaskConical size={14} /> Enter as Guest</button>
