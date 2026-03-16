@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { Trash2, ChevronLeft, ChevronRight, BrainCircuit, GraduationCap, RefreshCw, X, Plus, LayoutGrid, User, Home, BookOpen, Edit3, LogOut, FlaskConical } from 'lucide-react';
 
@@ -40,6 +40,8 @@ export default function App() {
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizResults, setQuizResults] = useState(null);
+  const [editingName, setEditingName] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState('');
 
   const fixImageUrl = (url) => {
     if (!url) return '';
@@ -88,6 +90,17 @@ export default function App() {
     return { sets: sList.length, totalItems, avg, tests: hList.length };
   }, [sets, historyData]);
 
+  const handleGoogleSignIn = async () => {
+    setAuthError('');
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      const profileRef = doc(db, 'artifacts', appId, 'users', cred.user.uid, 'profile', 'info');
+      await setDoc(profileRef, { displayName: cred.user.displayName || 'Student', email: cred.user.email, createdAt: Date.now() }, { merge: true });
+      setView('dashboard');
+    } catch (err) { setAuthError(err.message.replace('Firebase: ', '')); }
+  };
+
   const handleForgotPassword = async () => {
     if (!email) { setAuthError('Enter your email above first.'); return; }
     try { await sendPasswordResetEmail(auth, email); setAuthError('Reset email sent! Check your inbox.'); }
@@ -127,6 +140,11 @@ export default function App() {
         </form>
         {authError && <p className="mt-4 text-rose-500 text-xs font-bold text-center">{authError}</p>}
         <button onClick={handleGuestEntry} className="mt-6 w-full text-slate-400 font-black text-[10px] uppercase flex items-center justify-center gap-2"><FlaskConical size={14} /> Enter as Guest</button>
+        <div className="flex items-center gap-3 my-6"><div className="flex-1 h-px bg-slate-100"/><span className="text-[9px] font-black text-slate-300 uppercase">Or</span><div className="flex-1 h-px bg-slate-100"/></div>
+        <button onClick={handleGoogleSignIn} className="w-full bg-white border-2 border-slate-100 py-4 rounded-3xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:border-indigo-200 active:scale-95 transition-all">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+          Continue with Google
+        </button>
         <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className="mt-8 text-indigo-600 font-black text-[10px] uppercase underline">{authMode === 'login' ? "Sign Up" : "Login"}</button>
         <div className="mt-10 text-[8px] font-black text-slate-200 tracking-[0.3em] uppercase">Build {APP_VERSION}</div>
       </div>
@@ -202,7 +220,71 @@ export default function App() {
         )}
 
         {view === 'profile' && (
-          <div className="max-w-md mx-auto py-20 text-center"><div className="bg-white p-16 rounded-[4rem] shadow-2xl border"><User size={64} className="mx-auto mb-4 text-indigo-600" /><h2 className="text-3xl font-black mb-10 uppercase">{profile.displayName || 'Student'}</h2><button onClick={() => signOut(auth)} className="w-full bg-rose-50 text-rose-600 py-6 rounded-3xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2"><LogOut size={16}/> Sign Out</button></div></div>
+          <div className="max-w-md mx-auto py-10 animate-in fade-in duration-500">
+            {/* Avatar + Name */}
+            <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-50 text-center mb-4">
+              <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
+                <User size={36} className="text-indigo-600" />
+              </div>
+              {editingName ? (
+                <div className="flex gap-2 mt-2">
+                  <input
+                    autoFocus
+                    value={newDisplayName}
+                    onChange={e => setNewDisplayName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        if (newDisplayName.trim()) {
+                          handleSave(async () => {
+                            await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info'), { ...profile, displayName: newDisplayName.trim() }, { merge: true });
+                          });
+                          setEditingName(false);
+                        }
+                      }
+                      if (e.key === 'Escape') setEditingName(false);
+                    }}
+                    className="flex-1 bg-slate-50 p-3 rounded-2xl font-black text-center outline-none border border-indigo-200 text-sm uppercase"
+                    placeholder="Your name"
+                  />
+                  <button onClick={() => {
+                    if (newDisplayName.trim()) {
+                      handleSave(async () => {
+                        await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info'), { ...profile, displayName: newDisplayName.trim() }, { merge: true });
+                      });
+                    }
+                    setEditingName(false);
+                  }} className="bg-indigo-600 text-white px-4 rounded-2xl font-black text-xs uppercase">Save</button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <h2 className="text-2xl font-black uppercase">{profile.displayName || 'Student'}</h2>
+                  <Edit3 size={14} className="text-slate-300 hover:text-indigo-600 cursor-pointer" onClick={() => { setNewDisplayName(profile.displayName || ''); setEditingName(true); }} />
+                </div>
+              )}
+              {!user?.isAnonymous && <p className="text-[10px] font-bold text-slate-300 uppercase mt-1">{user?.email}</p>}
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50 text-center">
+                <div className="text-2xl font-black text-indigo-600">{stats.sets}</div>
+                <div className="text-[9px] font-black uppercase text-slate-300 mt-1">Sets</div>
+              </div>
+              <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50 text-center">
+                <div className="text-2xl font-black text-emerald-500">{stats.tests}</div>
+                <div className="text-[9px] font-black uppercase text-slate-300 mt-1">Quizzes</div>
+              </div>
+              <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50 text-center">
+                <div className="text-2xl font-black text-indigo-600">{stats.avg}%</div>
+                <div className="text-[9px] font-black uppercase text-slate-300 mt-1">Avg Score</div>
+              </div>
+            </div>
+
+            {/* Sign Out */}
+            <button onClick={() => signOut(auth)} className="w-full bg-rose-50 text-rose-600 py-6 rounded-3xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2">
+              <LogOut size={16}/> Sign Out
+            </button>
+          </div>
         )}
       </main>
 
