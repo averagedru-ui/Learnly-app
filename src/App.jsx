@@ -113,11 +113,12 @@ export default function App() {
         <BrainCircuit className="mx-auto text-indigo-600 mb-6" size={48} />
         <h1 className="text-2xl font-black mb-8 uppercase tracking-tight">Learnly Pro</h1>
         <form onSubmit={handleAuth} className="space-y-4">
-          {authMode === 'signup' && <input type="text" placeholder="Full Name" onChange={e => setFullName(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />}
-          <input type="email" placeholder="Email" onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
-          <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
-          <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase text-xs shadow-xl active:scale-95 transition-all">Sign In</button>
+          {authMode === 'signup' && <input type="text" placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />}
+          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border border-slate-100" />
+          <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-black uppercase text-xs shadow-xl active:scale-95 transition-all">{authMode === 'login' ? 'Sign In' : 'Sign Up'}</button>
         </form>
+        {authError && <p className="mt-4 text-rose-500 text-xs font-bold text-center">{authError}</p>}
         <button onClick={handleGuestEntry} className="mt-6 w-full text-slate-400 font-black text-[10px] uppercase flex items-center justify-center gap-2"><FlaskConical size={14} /> Enter as Guest</button>
         <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className="mt-8 text-indigo-600 font-black text-[10px] uppercase underline">{authMode === 'login' ? "Sign Up" : "Login"}</button>
         <div className="mt-10 text-[8px] font-black text-slate-200 tracking-[0.3em] uppercase">Build {APP_VERSION}</div>
